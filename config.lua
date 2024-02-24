@@ -2,6 +2,8 @@ Config = {}
 
 Config.CheckInventory = 2000
 
+Config.DefaultWeapon = 'w_ar_assaultrifle'
+
 Config.Weapons = {
     weapon_combatpistol = 'w_pi_combatpistol',
     weapon_appistol = 'w_pi_appistol',

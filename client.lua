@@ -18,7 +18,7 @@ local function getTwoSmallestKeys(tbl)
 end
 
 local function createAndAttachWeapon(weapon, ped, bone, slot)
-    local model = Config.Weapons[weapon]
+    local model = Config.Weapons[weapon] or Config.DefaultWeapon
     RequestModel(model)
     while not HasModelLoaded(model) do
         Wait(10)
@@ -32,7 +32,6 @@ local function createAndAttachWeapon(weapon, ped, bone, slot)
     SetEntityCompletelyDisableCollision(weaponBack, false, true)
     return weaponBack
 end
-
 
 local function updateWeaponInInventory()
     local player = QBCore.Functions.GetPlayerData()
@@ -84,8 +83,6 @@ local function BackLoop()
         end
     end)
 end
-
-
 
 AddEventHandler('onResourceStop', function(resourceName)
     if (GetCurrentResourceName() ~= resourceName) then return end
