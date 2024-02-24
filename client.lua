@@ -33,15 +33,20 @@ local function createAndAttachWeapon(weapon, ped, bone, slot)
     return weaponBack
 end
 
+local weaponCount = 0
+
 local function updateWeaponInInventory()
     local player = QBCore.Functions.GetPlayerData()
     while player == nil do player = QBCore.Functions.GetPlayerData() Wait(500) end
     local currentInventory = {}
+    local count = 0
     for i, item in pairs(player.items) do
         if item.type == "weapon" then
             currentInventory[item.slot] = item.name
+            count = count + 1
         end
     end
+    weaponCount = count
     for slot, weapon in pairs(WeaponInInventory) do
         if not currentInventory[slot] or currentInventory[slot] ~= weapon then
             WeaponInInventory[slot] = nil
@@ -61,22 +66,41 @@ local function BackLoop()
         while true do
             updateWeaponInInventory()
             local first, second = getTwoSmallestKeys(WeaponInInventory)
-            if first then
-                if weaponOnBack[1] and weaponOnBack[1] ~= WeaponInInventory[first] then
+            if weaponCount == 0 then
+                if weaponOnBack[1] then
                     DeleteEntity(weaponOnBack[1])
                     weaponOnBack[1] = nil
                 end
-                if not weaponOnBack[1] then
-                    weaponOnBack[1] = createAndAttachWeapon(WeaponInInventory[first], ped, bone, 1)
-                end
-            end
-            if second then
-                if weaponOnBack[2] and weaponOnBack[2] ~= WeaponInInventory[second] then
+                if weaponOnBack[2] then
                     DeleteEntity(weaponOnBack[2])
                     weaponOnBack[2] = nil
                 end
-                if not weaponOnBack[2] then
-                    weaponOnBack[2] = createAndAttachWeapon(WeaponInInventory[second], ped, bone, 2)
+            elseif weaponCount == 1 then
+                if weaponOnBack[2] then
+                    DeleteEntity(weaponOnBack[2])
+                    weaponOnBack[2] = nil
+                end
+                if first and not weaponOnBack[1] then
+                    weaponOnBack[1] = createAndAttachWeapon(WeaponInInventory[first], ped, bone, 1)
+                end
+            else
+                if first then
+                    if weaponOnBack[1] and weaponOnBack[1] ~= WeaponInInventory[first] then
+                        DeleteEntity(weaponOnBack[1])
+                        weaponOnBack[1] = nil
+                    end
+                    if not weaponOnBack[1] then
+                        weaponOnBack[1] = createAndAttachWeapon(WeaponInInventory[first], ped, bone, 1)
+                    end
+                end
+                if second then
+                    if weaponOnBack[2] and weaponOnBack[2] ~= WeaponInInventory[second] then
+                        DeleteEntity(weaponOnBack[2])
+                        weaponOnBack[2] = nil
+                    end
+                    if not weaponOnBack[2] then
+                        weaponOnBack[2] = createAndAttachWeapon(WeaponInInventory[second], ped, bone, 2)
+                    end
                 end
             end
             Wait(Config.CheckInventory)
@@ -89,6 +113,12 @@ AddEventHandler('onResourceStop', function(resourceName)
     for _, weapon in ipairs(weaponOnBack) do
         DeleteEntity(weapon)
     end
+end)
+
+AddEventHandler('onResourceStart', function(res)
+    if res ~= GetCurrentResourceName() then return end
+    Wait(1000)
+    BackLoop()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
